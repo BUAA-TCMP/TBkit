@@ -1,7 +1,8 @@
-function [Lx, Ly, Lz] = Gen_LxLyLz(hr, fast)
+function [Lx, Ly, Lz] = Gen_LxLyLz(hr, options)
 arguments
     hr = []
-    fast logical = true % only work for wannier90-3.1.0
+    options.fast logical = true
+    options.write_to_QtransF logical = true
 end
 if isempty(hr)
     [orbL, elementL, quantumL, SpinfulFlag] = wout_read();
@@ -9,14 +10,14 @@ else
     orbL = hr.orbL;
     elementL = hr.elementL;
     quantumL = hr.quantumL;
-    if sum(quantumL(:,4)) == 0
+    if sum(quantumL(:,4)) == 0 && sum(abs(quantumL(:,4))) ~= 0
         SpinfulFlag = true;
     else
         SpinfulFlag = false;
     end
 end
 %%
-if fast
+if options.fast
     L_p(1,:) = Y_lm(1,  0);
     L_p(2,:) = Y_lm(1,  1);
     L_p(3,:) = Y_lm(1, -1);
@@ -113,21 +114,21 @@ else
     Ly(logical(ZeroMat)) = 0;
     Lz(logical(ZeroMat)) = 0;
 end
-%% QtransF use inner uudd basis
-if SpinfulFlag
+%% write to QtransF, which uses inner uudd basis
+if options.write_to_QtransF
     WAN_NUM = length(Lx);
     
     udud2uudd = [1:2:(WAN_NUM-1),2:2:(WAN_NUM)];
-    Lx = Lx(udud2uudd,udud2uudd);
-    Ly = Ly(udud2uudd,udud2uudd);
-    Lz = Lz(udud2uudd,udud2uudd);
-end
-%% write to file
-Lx_line = reshape(double(Lx), numel(Lx), 1);
-Ly_line = reshape(double(Ly), numel(Ly), 1);
-Lz_line = reshape(double(Lz), numel(Lz), 1);
+    Lx_write = Lx(udud2uudd,udud2uudd);
+    Ly_write = Ly(udud2uudd,udud2uudd);
+    Lz_write = Lz(udud2uudd,udud2uudd);
 
-writematrix([real(Lx_line), imag(Lx_line)], "Lx.dat", 'Delimiter',' ')
-writematrix([real(Ly_line), imag(Ly_line)], "Ly.dat", 'Delimiter',' ')
-writematrix([real(Lz_line), imag(Lz_line)], "Lz.dat", 'Delimiter',' ')
+    Lx_line = reshape(double(Lx_write), numel(Lx_write), 1);
+    Ly_line = reshape(double(Ly_write), numel(Ly_write), 1);
+    Lz_line = reshape(double(Lz_write), numel(Lz_write), 1);
+    
+    writematrix([real(Lx_line), imag(Lx_line)], "Lx.dat", 'Delimiter',' ')
+    writematrix([real(Ly_line), imag(Ly_line)], "Ly.dat", 'Delimiter',' ')
+    writematrix([real(Lz_line), imag(Lz_line)], "Lz.dat", 'Delimiter',' ')
+end
 end

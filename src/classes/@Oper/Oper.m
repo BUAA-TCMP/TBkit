@@ -30,13 +30,17 @@ classdef Oper < group
         Rm
     end
 
+    properties(Dependent=true)
+        unitary {mustBeMember(unitary, [-1, 1])}
+    end
+
     properties (GetAccess = protected, Hidden = true)
         continuous = false   % Continuous group flag
         strict_eq = false    % Strict equality check flag
     end
     %% Constuction
     methods
-        function SymOper = Oper(R, U, t, options,optionsbasis)
+        function SymOper = Oper(R, U, t, options, optionsbasis)
             %%OPER Constructor for symmetry operator
             % Constructs symmetry operation with spatial, Hilbert space, and symmetry properties
             %
@@ -59,6 +63,7 @@ classdef Oper < group
                 options.t = [];
                 options.Rlocal = [];
                 options.conjugate logical = false;
+                options.unitary {mustBeMember(options.unitary, [-1, 1])} = 1 
                 options.antisymmetry logical = false;
                 options.strict_eq logical = false;
                 options.Rm = [];
@@ -85,7 +90,13 @@ classdef Oper < group
             SymOper.t = (SymOper.t);
 
             SymOper.Rf = options.Rlocal;
-            SymOper.conjugate = options.conjugate;
+
+            if options.conjugate
+                SymOper.conjugate = options.conjugate;
+            elseif options.unitary == -1
+                SymOper.conjugate = true;
+            end
+
             SymOper.antisymmetry = options.antisymmetry;
             SymOper.strict_eq = options.strict_eq;
             if isnan(SymOper.U)
@@ -107,6 +118,25 @@ classdef Oper < group
             e = OperObj.isIdentity();
         end
 
+        function unitary_value = get.unitary(OperObj)
+            if OperObj.conjugate
+                unitary_value = -1;
+            else
+                unitary_value =  1;
+            end
+        end
+
+        function OperObj = set.unitary(OperObj, input)
+            arguments
+                OperObj Oper
+                input {mustBeMember(input, [-1, 1])}
+            end
+            if input == 1
+                OperObj.conjugate = false;
+            else
+                OperObj.conjugate = true;
+            end
+        end
     end
     %% 
     methods(Static)

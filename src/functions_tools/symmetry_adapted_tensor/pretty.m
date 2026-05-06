@@ -1,8 +1,8 @@
-function [Out,SymMat,SymMatDisplay] = pretty(Tensor,mode,options)
+function [Out,SymMat,SymMatDisplay,n_indp] = pretty(Tensor,mode,options)
 arguments
     Tensor
     mode  {mustBeMember(mode,{'EQ','latex','Table'})} =  'EQ';
-    options.silent = false;
+    options.silent logical = false;
 end
 n_ele = Tensor.n_ele;
 tensor_rank = Tensor.tensor_rank;
