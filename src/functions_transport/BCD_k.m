@@ -36,5 +36,5 @@ Nmu = length(mu_list);
 E_minus_mu = repmat(EIG_ki, 1, Nmu) - repmat(mu_list, Nbands, 1);
 f1 = Fermi_1(E_minus_mu, options.T);
 
-Omega_ab_mu = tensorprod(Omega_ab .* real(diag(VEC_ki(:,:,c))), f1, 1, 1);
+Omega_ab_mu = -tensorprod(Omega_ab .* real(diag(VEC_ki(:,:,c))), f1, 1, 1);
 end
