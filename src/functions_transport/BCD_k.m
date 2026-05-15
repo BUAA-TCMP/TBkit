@@ -6,6 +6,7 @@ arguments
     mu_list double
     options.T = 50 % Kelvin
     options.eps = 1e-4
+    options.eta = 0
 end
 Nbands = Ham.Basis_num;
 a = tensor_index(1);
@@ -15,9 +16,10 @@ c = tensor_index(3);
 [WAV_ki, EIG_ki, dH_dk_xyz] = Ham.fft(kpoint);
 
 dEnm = repmat(EIG_ki, 1, Nbands) - repmat(EIG_ki', Nbands, 1);
-inv_dEnm = zeros(Nbands, Nbands);
+inv_dEnm_2 = zeros(Nbands, Nbands);
 is_degenerated = abs(dEnm) < options.eps;
-inv_dEnm(~is_degenerated) = 1./dEnm(~is_degenerated);
+%inv_dEnm(~is_degenerated) = 1./dEnm(~is_degenerated);   %%
+inv_dEnm_2(~is_degenerated) = 1./( (dEnm(~is_degenerated)).^2 +options.eta^2 ) ;   
 %%
 VEC_ki = zeros(Nbands, Nbands, 3);
 for i = 1:3
@@ -25,10 +27,10 @@ for i = 1:3
 end
 %%
 Omega_ab = zeros([Nbands,1]);
-
 for n = 1:Nbands
     for m = 1:Nbands
-        Omega_ab(n) = Omega_ab(n) - 2*imag(VEC_ki(n,m,a) * VEC_ki(m,n,b)) * inv_dEnm(n,m)^2;
+        %Omega_ab(n) = Omega_ab(n) - 2*imag(VEC_ki(n,m,a) * VEC_ki(m,n,b)) * (inv_dEnm(n,m)^2 ; %%
+        Omega_ab(n) = Omega_ab(n) - 2*imag(VEC_ki(n,m,a) * VEC_ki(m,n,b)) * (inv_dEnm_2(n,m)); 
     end
 end
 
