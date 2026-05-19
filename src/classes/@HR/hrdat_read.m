@@ -1,66 +1,86 @@
 function [dataArray, NRPT_list, NRPTS, NUM_WAN] = hrdat_read(filename)
 %HRDAT_READ Reads Wannier90 Hamiltonian data from _hr.dat file
-%   [DATAARRAY, NRPT_LIST, NRPTS, NUM_WAN] = HRDAT_READ(FILENAME) reads:
-%       - NUM_WAN: Number of Wannier functions
-%       - NRPTS: Number of real-space points
-%       - NRPT_LIST: Degeneracy weights of k-points
-%       - DATAARRAY: Hopping parameters [i, j, nx, ny, nz, real_part, imag_part]
-%
-%   If no filename specified, defaults to 'wannier90_hr.dat'
 
-    %% Handle default filename
-    if nargin < 1
+    if nargin < 1 || isempty(filename)
         filename = 'wannier90_hr.dat';
     end
 
-    %% Read header information (NUM_WAN and NRPTS)
+    %% Read header
     fileID = fopen(filename, 'r');
     if fileID == -1
         error('Failed to open file: %s', filename);
     end
-    
-    % Read NUM_WAN (number of Wannier functions) from line 2
-    % Read NRPTS (number of real-space points) from line 3
-    headerFormat = '%d%*s';  % Read integer, ignore remaining content
-    headerData = textscan(fileID, headerFormat, 2,...
-                         'HeaderLines', 1,...
-                         'Delimiter', ' ',...
-                         'MultipleDelimsAsOne', true);
-    
-    NUM_WAN = headerData{1}(1);
-    NRPTS = double(headerData{1}(2));
-    NRPTS_num1=fix(double(NRPTS)/15);
-    NRPTS_num2=mod(NRPTS,15);
-    delimiter = ' ';
+
+    headerData = textscan(fileID, '%d%*s', 2, ...
+        'HeaderLines', 1, ...
+        'Delimiter', ' ', ...
+        'MultipleDelimsAsOne', true);
+
     fclose(fileID);
 
-    %% Read NRPT_LIST (k-point weights)
-            fileID = fopen(filename,'r');
-            startRow = 4;
-            endRow = startRow+NRPTS_num1;% calculate here
-            formatSpec = '%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%[^\n\r]';
-            dataArray = textscan(fileID, formatSpec,NRPTS_num1+1 , 'Delimiter', delimiter,...
-                'MultipleDelimsAsOne', true, 'TextType', 'string', 'EmptyValue', 0,...
-                'HeaderLines', startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
-            NRPT_list = [dataArray{1:end-1}];
-            NRPT_list = reshape(NRPT_list',NRPTS_num1*15+15,1);
+    if isempty(headerData{1}) || numel(headerData{1}) < 2
+        error('Failed to read NUM_WAN and NRPTS from file: %s', filename);
+    end
+
+    NUM_WAN = headerData{1}(1);
+    NRPTS   = double(headerData{1}(2));
+
+    NRPT_lines = ceil(NRPTS / 15);
+
+    %% Read NRPT_list
+    fileID = fopen(filename, 'r');
+    if fileID == -1
+        error('Failed to open file: %s', filename);
+    end
+
+    fgetl(fileID);
+    fgetl(fileID);
+    fgetl(fileID);
+
+    NRPT_list = zeros(NRPTS, 1);
+    count = 0;
+
+    for iline = 1:NRPT_lines
+        thisLine = fgetl(fileID);
+
+        if ~ischar(thisLine)
             fclose(fileID);
+            error('Unexpected end of file while reading NRPT_list.');
+        end
+
+        vals = sscanf(thisLine, '%f');
+        nval = numel(vals);
+
+        if count + nval > NRPTS
+            nval = NRPTS - count;
+        end
+
+        NRPT_list(count+1:count+nval) = vals(1:nval);
+        count = count + nval;
+    end
+
+    fclose(fileID);
+
+    if count ~= NRPTS
+        error('Failed to read NRPT_list: expected %d entries, got %d.', ...
+            NRPTS, count);
+    end
 
     %% Read hopping parameters
     fileID = fopen(filename, 'r');
+    if fileID == -1
+        error('Failed to open file: %s', filename);
+    end
 
-            if NRPTS_num2==0
-                startRow = endRow;
-            else
-                startRow = endRow+1;
-            end
+    startRow = 4 + NRPT_lines;
 
-    hoppingFormat = '%f %f %f %f %f %f %f';  % [i, j, nx, ny, nz, real, imag]
-    
-    dataArray = textscan(fileID, hoppingFormat,...
-                        'HeaderLines', startRow-1,...
-                        'Delimiter', ' ',...
-                        'MultipleDelimsAsOne', true);
-    
+    hoppingFormat = '%f %f %f %f %f %f %f';
+
+    dataArray = textscan(fileID, hoppingFormat, ...
+        'HeaderLines', startRow - 1, ...
+        'Delimiter', ' ', ...
+        'MultipleDelimsAsOne', true);
+
     fclose(fileID);
+
 end

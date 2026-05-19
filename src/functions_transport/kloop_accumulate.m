@@ -91,7 +91,7 @@ end
 
 
 %% =======================================================================
-%  (2) Fortran 风格 scale + log + contribution selection
+%  (2) scale + log + contribution selection
 % ========================================================================
 asf = optionsAdapt.adapt_scaling_factor;
 weight = weight * (asf / max(weight));

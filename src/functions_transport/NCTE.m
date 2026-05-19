@@ -29,6 +29,7 @@ arguments
     options.eps = 1e-4
     options.batch_size = 1e6  % 默认批次大小 100*100*100
     options.Coeffs = [1 1 -1];
+    options.eta = 0.025;
     optionsAdapt.AdapteEnable (1,1) logical = false
     optionsAdapt.min_keep (1,1) double {mustBePositive} = 32
     optionsAdapt.mesh_shape double = []
@@ -93,7 +94,7 @@ const_factor = (constants.charge_C / T / constants.hbar_eV_s) ...
 % ------------------------------------------------
 %   MAIN LOOP OVER k-POINTS
 % ------------------------------------------------
-kfun = @(kpt) NCTE_k(Ham, tensor_index, kpt, mu_list, T, eps, options.Coeffs);
+kfun = @(kpt) NCTE_k(Ham, tensor_index, kpt, mu_list, T, eps, options.Coeffs, options.eta);
 
 options_par = namedargs2cell(optionsParallel);
 options_adp = namedargs2cell(optionsAdapt);

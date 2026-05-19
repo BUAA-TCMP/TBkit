@@ -1,4 +1,4 @@
-function alpha_mu = NCTE_k(Ham, tensor_index, kpoint, mu_list, T, eps, Coeffs)
+function alpha_mu = NCTE_k(Ham, tensor_index, kpoint, mu_list, T, eps, Coeffs,eta)
 % --------------------------------------------------------
 % NCTE_k
 %   Compute nonlinear chiral thermoelectric kernel α_{abc}(k, μ, T)
@@ -13,6 +13,7 @@ arguments
     T double = 50
     eps double = 1e-4
     Coeffs double = [1 1 -1]
+    eta = 0.001;
 end
 
 Nbands = Ham.Basis_num;
@@ -30,8 +31,8 @@ EIG = EIG(:);
 
 dEnm = EIG - EIG.';
 inv_dEnm_sq = zeros(Nbands);
-valid = abs(dEnm) > eps;
-inv_dEnm_sq(valid) = 1 ./ (dEnm(valid).^2);
+valid = abs(dEnm)+eta > eps;
+inv_dEnm_sq(valid) = 1 ./ (dEnm(valid)+1i*eta).^2;
 
 % ---------------- velocity matrices ----------------
 V   = zeros(Nbands, Nbands, 3);
