@@ -95,6 +95,7 @@ function varargout = bandplot3d(EIGENCAR_3D, klistX, klistY, options)
     zlabel(ax, options.zlabel);
     colormap(ax, options.cmap);
     view(ax, options.view(1), options.view(2));
+    axis equal   
 
     % Return output handles
     if nargout == 2

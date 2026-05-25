@@ -113,6 +113,8 @@ api_path = "src/functions_api";
 %   Htrig   
 %% Transport functions
 transport_path = "src/functions_transport";
+%% MoireHamiltonian functions
+transport_path = "src/function_moire";
 %% data files
 datas_path = "src/datas";
 %% lib files

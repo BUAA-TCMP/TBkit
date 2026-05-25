@@ -28,6 +28,8 @@ Built-in support for calculating and plotting band structures, density of states
 ### ⚙️ **Applications Across Diverse Systems**
 Topological Materials, 4D, Fractal, quasicrystal model and Moiré systems ...
 
+For Moiré systems, code for constructing symmetry-based minimal surface tight-binding models and moiré band Hamiltonians, as well as DFT post-processing, is available in [Example 10](example/example10-Moire_hamiltonian) and [Example 4](example/example04-HR/Wannier_hr_postprocessing).
+
 ### 🧰 Rich Functionality — A Toolbox, Not a Black Box
 
 TBkit is built as a **true toolbox**, not a sealed black box. Like assembling LEGO blocks, users can flexibly combine, modify, and extend components to suit specific research needs.
