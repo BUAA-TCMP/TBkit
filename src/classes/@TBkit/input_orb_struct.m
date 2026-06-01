@@ -56,6 +56,7 @@ end
 
 % Store orbital positions in lattice coordinates
 TBkitobj.orbL = [[tmpsites.rc1].', [tmpsites.rc2].', [tmpsites.rc3].'];
+TBkitobj.orbL_cart = TBkitobj.orbL * TBkitobj.Rm;
 
 % Process symmetry operations if enabled
 if options.Operation

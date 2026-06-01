@@ -11,17 +11,12 @@ Nbands = Ham.Basis_num;
 a = tensor_index(1);
 b = tensor_index(2);
 %%
-[WAV_ki, EIG_ki, dH_dk_xyz] = Ham.fft(kpoint);
+[~, EIG_ki, ~, VEC_ki] = Ham.fft(kpoint);
 
 dEnm = repmat(EIG_ki, 1, Nbands) - repmat(EIG_ki', Nbands, 1);
 inv_dEnm = zeros(Nbands, Nbands);
 is_degenerated = abs(dEnm) < options.eps;
 inv_dEnm(~is_degenerated) = 1./dEnm(~is_degenerated);
-%%
-VEC_ki = zeros(Nbands, Nbands, 3);
-for i = 1:3
-    VEC_ki(:,:,i) = WAV_ki' * dH_dk_xyz(:,:,i) * WAV_ki;
-end
 %%
 Omega_ab = zeros([Nbands,1]);
 

@@ -371,8 +371,8 @@ classdef HR < TBkit & matlab.mixin.CustomDisplay
                 obj.mex_handle = mex_hamiltonian('init', init_data);
             end
         end
-        [W,D,dH_dk_R] = fft_wrapper(H_hr, klist)
-        [W, D, dH_dk_R] = fft(H_hr,klist_cart, rotate_cart)
+        [W,D,dH_dk_R,vec] = fft_wrapper(H_hr, klist)
+        [W, D, dH_dk_R,vec] = fft(H_hr,klist_cart, rotate_cart)
         [W,D,dH_dk_R,dH_dk_dk_R] = fft_2(H_hr, klist_cart)
         %     obj.init_mex();
         %     [W, D, dH_dk_R] = mex_hamiltonian_calc(obj.mex_handle, klist);

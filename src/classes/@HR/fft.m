@@ -1,4 +1,4 @@
-function [W,D,dH_dk_R] = fft(H_hr, klist_cart, rotate_cart)
+function [W,D,dH_dk_R,vec] = fft(H_hr, klist_cart, rotate_cart)
 arguments
     H_hr HR
     klist_cart % cart
@@ -28,7 +28,7 @@ Hk = tensorprod(HnumList, phase, 3, 1);
 Hk = (Hk + Hk') / 2;  % Hermitian 修正
 [W,D] = eig(Hk, 'vector');
 
-
+dH_dk_R = zeros(NBANDS, NBANDS, 3);
 for i = 1:3
     dH_dk_R(:,:,i) = 1i * tensorprod(HnumList , phase.*vectorList_R(:,i), 3, 1);
     %dH_dk_R(:,:,i) = dH;
@@ -65,6 +65,14 @@ end
 %     dH_dk_R(:,:,dir) = (dH + dH') / 2;  % Hermitian修正
 % end
 
+%% velocity matrix with atomic gauge correction
+if nargout > 3
+    dEnm = repmat(D, 1, NBANDS) - repmat(D', NBANDS, 1);
+    vec = zeros(NBANDS, NBANDS, 3);
+    for i = 1:3
+        vec(:,:,i) = W' * dH_dk_R(:,:,i) * W + (W' * diag(H_hr.orbL_cart(:,i)) * W) .* dEnm .* -1i;
+    end
+end
 end
 
 

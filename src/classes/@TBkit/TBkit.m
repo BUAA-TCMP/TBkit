@@ -68,6 +68,7 @@ classdef TBkit < matlab.mixin.CustomDisplay
         Hfun;
         Basis;
         orbL = [];
+        orbL_cart = [];
         elementL = [];
         quantumL = [];
         orb_symL = sym([]);

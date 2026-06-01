@@ -25,6 +25,7 @@ if isa(A,'HR') && isa(B,'HR')
     H_hr = A;
     H_hr.vectorL = unique([H_hr1.vectorL;H_hr2.vectorL],'rows');
     H_hr.orbL = [H_hr1.orbL;H_hr2.orbL];
+    H_hr.orbL_cart = [H_hr1.orbL_cart;H_hr2.orbL_cart];
     H_hr.quantumL = [H_hr1.quantumL;H_hr2.quantumL];
     H_hr.elementL = [H_hr1.elementL;H_hr2.elementL];
     H_hr.orb_symL = [H_hr1.orb_symL;H_hr2.orb_symL];
