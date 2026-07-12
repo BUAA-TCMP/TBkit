@@ -273,22 +273,123 @@ end
 % Use the same 3-term combination as in your Tabc-style implementation:
 %   K^{abc} + K^{bac} + K^{cba}
 %   R^{abc} + R^{bac} + R^{cba}
+% T_tensor = zeros(dimk, dimk, dimk, Nbands);
+% 
+% for a = 1:dimk
+%     for b = 1:dimk
+%         for c = 1:dimk
+%             K1 = reshape(K(:,:,a,b,c), [Nbands, Nbands]);
+%             K2 = reshape(K(:,:,b,a,c), [Nbands, Nbands]);
+%             K3 = reshape(K(:,:,c,b,a), [Nbands, Nbands]);
+% 
+%             rowSumK = sum(K1, 2) + sum(K2, 2) + sum(K3, 2);
+%             rowSumR = Rsum(:,a,b,c) + Rsum(:,b,a,c) + Rsum(:,c,b,a);
+% 
+%             T_tensor(a,b,c,:) = -real(rowSumK + rowSumR);
+%         end
+%     end
+% end
+% T_unsym = zeros(dimk, dimk, dimk, Nbands);
+% T_tensor = zeros(dimk, dimk, dimk, Nbands);
+% 
+% for a = 1:dimk
+%     Va = V(:,:,a);                        % Va(n,m)
+%     for b = 1:dimk
+%         for c = 1:dimk
+%             DDbc_t = DD(:,:,b,c).';       % DD(m,n,b,c), matching Python bcmnij
+%             M = Va .* DDbc_t .* G4;
+%             T_unsym(a,b,c,:) = -0.5 * imag(sum(M, 2));
+%         end
+%     end
+% end
+% 
+% perm_abc = [
+%     1 2 3
+%     1 3 2
+%     2 1 3
+%     2 3 1
+%     3 1 2
+%     3 2 1
+% ];
+% 
+% for a = 1:dimk
+%     for b = 1:dimk
+%         for c = 1:dimk
+%             acc = zeros(Nbands,1);
+%             idx = [a,b,c];
+%             for ip = 1:size(perm_abc,1)
+%                 pidx = idx(perm_abc(ip,:));
+%                 acc = acc + reshape(T_unsym(pidx(1),pidx(2),pidx(3),:), Nbands, 1);
+%             end
+%             T_tensor(a,b,c,:) = acc;
+%         end
+%     end
+% end
+
+
+% Correct KR definition:
+% T_abc = -1/2 Re sum_{(abc)} [ sum_m K_abc^{nm} + sum_{m,l} R_abc^{nml} ]
+%
+% IMPORTANT:
+% Do not use unique(perms(...)).
+% The multiplicity must be kept:
+% xxx gives 6 identical terms;
+% xxy gives 2*(xxy + xyx + yxx).
+
+perm_abc = [
+    1 2 3
+    1 3 2
+    2 1 3
+    2 3 1
+    3 1 2
+    3 2 1
+];
+
 T_tensor = zeros(dimk, dimk, dimk, Nbands);
 
 for a = 1:dimk
     for b = 1:dimk
         for c = 1:dimk
-            K1 = reshape(K(:,:,a,b,c), [Nbands, Nbands]);
-            K2 = reshape(K(:,:,b,a,c), [Nbands, Nbands]);
-            K3 = reshape(K(:,:,c,b,a), [Nbands, Nbands]);
 
-            rowSumK = sum(K1, 2) + sum(K2, 2) + sum(K3, 2);
-            rowSumR = Rsum(:,a,b,c) + Rsum(:,b,a,c) + Rsum(:,c,b,a);
+            idx = [a, b, c];
 
-            T_tensor(a,b,c,:) = -real(rowSumK + rowSumR);
+            rowSumK = zeros(Nbands, 1);
+            rowSumR = zeros(Nbands, 1);
+
+            for ip = 1:size(perm_abc, 1)
+                p = idx(perm_abc(ip, :));
+
+                ap = p(1);
+                bp = p(2);
+                cp = p(3);
+
+                Kp = reshape(K(:,:,ap,bp,cp), [Nbands, Nbands]);
+                rowSumK = rowSumK + sum(Kp, 2);
+
+                rowSumR = rowSumR + reshape(Rsum(:,ap,bp,cp), [Nbands, 1]);
+            end
+
+            T_tensor(a,b,c,:) = -0.5 * real(rowSumK + rowSumR);
         end
     end
 end
+
+% Keep the old K+R version for one-to-one debugging only. It is not used by
+% ForthHall_ik_2D_sym_sumrule.
+% T_tensor = zeros(dimk, dimk, dimk, Nbands);
+% for a = 1:dimk
+%     for b = 1:dimk
+%         for c = 1:dimk
+%             K1 = reshape(K(:,:,a,b,c), [Nbands, Nbands]);
+%             K2 = reshape(K(:,:,b,a,c), [Nbands, Nbands]);
+%             K3 = reshape(K(:,:,c,b,a), [Nbands, Nbands]);
+%             rowSumK = sum(K1, 2) + sum(K2, 2) + sum(K3, 2);
+%             rowSumR = Rsum(:,a,b,c) + Rsum(:,b,a,c) + Rsum(:,c,b,a);
+%             T_tensor(a,b,c,:) = -real(rowSumK + rowSumR);
+%         end
+%     end
+% end
+
 
 %% ==================== dOmega(a,b,c,n) ====================
 % ∂_c Ω_ab^n = -2 Im Σ_m [ d_c(v_a^{nm}v_b^{mn})/ε_nm^2 - 2 v_a^{nm}v_b^{mn}Δ_c^{nm}/ε_nm^3 ]

@@ -27,11 +27,11 @@ else
     ParallelFlag = true;
 
     pool = gcp('nocreate');
-    if isempty(pool) || pool.NumWorkers ~= optionsParallel.ncore
+    if isempty(pool) || pool.NumWorkers ~= options.ncore
         if ~isempty(pool)
             delete(pool);
         end
-        pool = parpool(optionsParallel.ncore);
+        pool = parpool(options.ncore);
     end
 
 end
